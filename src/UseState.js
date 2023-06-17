@@ -4,8 +4,8 @@ const SECURITY_CODE = 'paradigma'
 
 export function UseState(props) {
 
-  const[state, setState] = React.useState({
-    value:'',
+  const [state, setState] = React.useState({
+    value: '',
     error: false,
     loading: false,
     deleted: false,
@@ -16,54 +16,82 @@ export function UseState(props) {
   // const [error, setError] = React.useState(false);
   // const [loading, setLoading] = React.useState(false);
 
-  React.useEffect(()=>{
-    // console.log('Empezando el efecto')
-    if (!!state.loading) {
-
-      setTimeout(()=> {
-        // console.log('Haciendo la validación')
-        if (state.value === SECURITY_CODE) {
-          setState({
-            ...state,
-            error: false,
-            loading: false,
-            confirmed: true})
-        } else {
-          setState({...state, error:true, loading:false});
-
-        }
-        // console.log('terminando la validación')
-      },1500)
-    }
-    // console.log('Terminando el efecto')
-  },[state, state.value, state.loading])
-
-  function load(){
-    setState({...state,
-      loading:!state.loading,
-      error:false
+  const onConfirm = () => {
+    setState({
+      ...state,
+      error: false,
+      loading: false,
+      confirmed: true
     })
   }
+  const onError = () => {
+    setState({ ...state, error: true, loading: false });
+  }
+
+  const onWrite = (newValue) => {
+    setState({ value: newValue })
+  }
+
+
+  function load() {
+    setState({
+      ...state,
+      loading: !state.loading,
+      error: false
+    })
+  }
+
+  function onDelete() {
+    setState({
+      ...state,
+      deleted: true
+    })
+  }
+
+  function onReset() {
+    setState({
+      ...state,
+      confirmed: false,
+      deleted: false,
+      value: ''
+    })
+  }
+  React.useEffect(() => {
+
+    // console.log('Empezando el efecto')
+    if (!!state.loading) {
+      setTimeout(() => {
+        // console.log('Haciendo la validación')
+        if (state.value === SECURITY_CODE) {
+          onConfirm()
+        } else {
+          onError()
+        }
+        // console.log('terminando la validación')
+      }, 1500)
+    }
+    // console.log('Terminando el efecto')
+  }, [onConfirm, onError, state.value, state.loading])
 
   if (!state.deleted && !state.confirmed) {
     return (
       <div className='p-5 border rounded-lg m-5'>
         <h2 className='font-bold'> Eliminar {props.name} </h2>
         <p className='p-5'>Por favor, escribe el código de seguridad</p>
-  
-        {(state.error  && !state.loading) &&  (<p className='text-red-600'> Error: el código es incorrecto </p>) }
-        {state.loading && ( <p> Cargando... </p>) }
-  
-        <input 
+
+        {(state.error && !state.loading) && (<p className='text-red-600'> Error: el código es incorrecto </p>)}
+        {state.loading && (<p> Cargando... </p>)}
+
+        <input
           className='m-5 p-4 border border-black rounded-lg h-4'
-          placeholder='Código de seguridad.' 
+          placeholder='Código de seguridad.'
           value={state.value}
-          onChange={(event)=>{
-            setState({ value:event.target.value})
-          }}/>
+          onChange={(event) => {
+            onWrite(event.target.value)
+          }} />
         <button
           className='bg-green-500 text-white w-32 h-10 rounded-lg'
-          onClick={()=> load()}> Comprobar</button>
+          onClick={() => load()}> Comprobar</button>
       </div>
     )
   } else if (state.confirmed && !state.deleted) {
@@ -75,20 +103,13 @@ export function UseState(props) {
             <button
               className='bg-green-500 text-white w-32 h-10 rounded-lg'
               onClick={() => {
-                setState({
-                  ...state,
-                  deleted: true
-                })
+                onDelete()
               }}>Si, eliminar</button>
 
             <button
               className='bg-green-500 text-white w-40 m-4 h-10 rounded-lg'
-              onClick={()=>{
-                setState({
-                  ...state,
-                  confirmed: false,
-                  value: ''
-                })
+              onClick={() => {
+                onReset()
               }}
             >Nop, me arrepentí</button>
 
@@ -100,22 +121,15 @@ export function UseState(props) {
     return (
       <>
         <p>Eliminado con exito</p>
-        
+
         <button
-              className='bg-green-500 text-white w-40 m-4 h-10 rounded-lg'
-              onClick={()=>{
-                setState({
-                  ...state,
-                  confirmed: false,
-                  deleted: false,
-                  value: ''
-                })
-              }}
-            >Resetear, volver atrás</button>
-            {console.log(state)}
+          className='bg-green-500 text-white w-40 m-4 h-10 rounded-lg'
+          onClick={() => {
+            onReset()
+          }}
+        >Resetear, volver atrás</button>
+        {console.log(state)}
       </>
     )
   }
-
-
 }
