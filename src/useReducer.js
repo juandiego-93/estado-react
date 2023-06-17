@@ -5,13 +5,23 @@ const SECURITY_CODE = 'paradigma'
 export function UseReducer(props) {
     const [state, dispatch] = React.useReducer(reducer, initialState);
 
+    const onConfirm = () => dispatch({ type: actionTypes.confirm })
+    const onError = () => dispatch({ type: actionTypes.error })
+    const onLoad = () => dispatch({ type: actionTypes.load })
+    const onDelete = () => dispatch({ type: actionTypes.delete })
+    const onReset = () => dispatch({ type: actionTypes.reset })
+
+    const onWrite = ({ target: { value } }) => {
+        dispatch({ type: actionTypes.write, payload: value })
+    }
+
     React.useEffect(() => {
         if (!!state.loading) {
             setTimeout(() => {
                 if (state.value === SECURITY_CODE) {
-                    dispatch({ type: 'CONFIRM' })
+                    onConfirm()
                 } else {
-                    dispatch({ type: 'ERROR' })
+                    onError()
                 }
             }, 1500)
         }
@@ -30,12 +40,10 @@ export function UseReducer(props) {
                     className='m-5 p-4 border border-black rounded-lg h-4'
                     placeholder='Código de seguridad.'
                     value={state.value}
-                    onChange={(event) => {
-                        dispatch({ type: 'WRITE', payload: event.target.value })
-                    }} />
+                    onChange={onWrite} />
                 <button
                     className='bg-green-500 text-white w-32 h-10 rounded-lg'
-                    onClick={() => dispatch({ type: 'LOAD' })}> Comprobar</button>
+                    onClick={onLoad}> Comprobar</button>
             </div>
         )
     } else if (state.confirmed && !state.deleted) {
@@ -46,15 +54,11 @@ export function UseReducer(props) {
                     <div className='flex items-center justify-center'>
                         <button
                             className='bg-green-500 text-white w-32 h-10 rounded-lg'
-                            onClick={() => {
-                                dispatch({ type: 'DELETE' })
-                            }}>Si, eliminar</button>
+                            onClick={onDelete}>Si, eliminar</button>
 
                         <button
                             className='bg-green-500 text-white w-40 m-4 h-10 rounded-lg'
-                            onClick={() => {
-                                dispatch({ type: 'RESET' })
-                            }}
+                            onClick={onReset}
                         >Nop, me arrepentí</button>
                     </div>
                 </div>
@@ -66,9 +70,7 @@ export function UseReducer(props) {
                 <p>Eliminado con exito</p>
                 <button
                     className='bg-green-500 text-white w-40 m-4 h-10 rounded-lg'
-                    onClick={() => {
-                        dispatch({ type: 'RESET' })
-                    }}
+                    onClick={onReset}
                 >Resetear, volver atrás</button>
                 {console.log(state)}
             </>
@@ -77,40 +79,50 @@ export function UseReducer(props) {
 }
 
 const initialState = {
-    value: 'paradigma',
+    value: '',
     error: false,
     loading: false,
     deleted: false,
     confirmed: false,
 };
+
+const actionTypes = {
+    confirm: 'CONFIRM',
+    error: 'ERROR',
+    write: 'WRITE',
+    load: 'LOAD',
+    delete: 'DELETE',
+    reset: 'RESET'
+}
+
 const reducerObject = (state, payload) => ({
-    'CONFIRM': {
+    [actionTypes.confirm]: {
         ...state,
         error: false,
         loading: false,
         confirmed: true
     },
-    'ERROR': {
+    [actionTypes.error]: {
         ...state,
         error: true,
         loading: false,
     },
-    'LOAD': {
+    [actionTypes.load]: {
         ...state,
         loading: !state.loading,
         error: false
     },
-    'DELETE': {
+    [actionTypes.delete]: {
         ...state,
         deleted: true
     },
-    'RESET': {
+    [actionTypes.reset]: {
         ...state,
         confirmed: false,
         deleted: false,
-        value: 'paradigma'
+        value: ''
     },
-    'WRITE': {
+    [actionTypes.write]: {
         ...state,
         value: payload
     }
